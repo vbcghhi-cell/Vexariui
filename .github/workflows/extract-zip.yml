@@ -22,7 +22,7 @@ jobs:
           import tempfile
           import shutil
 
-          archive = Path("VexariUI-OpenSource.zip")
+          archive = Path("VexariUI.zip")
           if not archive.is_file():
               raise SystemExit("ZIP file not found!")
 

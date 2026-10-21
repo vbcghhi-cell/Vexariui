@@ -1,0 +1,69 @@
+
+name: Extract VexariUI ZIP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract project ZIP
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import tempfile
+          import shutil
+
+          archive = Path("VexariUI-OpenSource.zip")
+          if not archive.is_file():
+              raise SystemExit("ZIP file not found!")
+
+          stage = Path(tempfile.mkdtemp())
+          with ZipFile(archive) as z:
+              for item in z.infolist():
+                  p = Path(item.filename)
+                  if p.is_absolute() or ".." in p.parts:
+                      raise SystemExit("Unsafe ZIP path!")
+                  if ".git" in p.parts:
+                      continue
+                  z.extract(item, stage)
+
+          entries = list(stage.iterdir())
+          source = stage
+          if len(entries) == 1 and entries[0].is_dir():
+              source = entries[0]
+
+          for item in source.iterdir():
+              if item.name == ".git":
+                  continue
+              dest = Path(item.name)
+              if item.is_dir():
+                  shutil.copytree(item, dest, dirs_exist_ok=True)
+              else:
+                  shutil.copy2(item, dest)
+
+          archive.unlink()
+          print("Project extracted successfully.")
+
+          PY
+
+      - name: Commit extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Extract VexariUI open-source project"
+            git push
+          else
+            echo "No changes to commit."
+          fi
+          

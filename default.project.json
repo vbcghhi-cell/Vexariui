@@ -1,0 +1,23 @@
+{
+    "name": "VexariUI",
+    "tree": {
+        "$className": "DataModel",
+        "ReplicatedStorage": {
+            "VexariUI": {
+                "$path": "src/"
+            },
+            "build": {
+                "$path": "build/"
+            }
+        },
+        "StarterPlayer": {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": {
+                "$className": "StarterPlayerScripts",
+                "main": {
+                    "$path": "main.client.lua"
+                }
+            }
+        }
+    }
+}

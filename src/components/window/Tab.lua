@@ -166,6 +166,27 @@ function TabModule.New(Config, UIScale)
 		}),
 	}, true)
 
+	-- Vexari UI: thin bar on the left edge of the selected tab
+	-- (Window Config Style = "Dashboard" or TabIndicator = true)
+	if Window.TabIndicator then
+		Tab.UIElements.Indicator = New("Frame", {
+			Name = "Indicator",
+			Size = UDim2.new(0, 3, 0.5, 0),
+			AnchorPoint = Vector2.new(0, 0.5),
+			Position = UDim2.new(0, 2, 0.5, 0),
+			BackgroundTransparency = 1,
+			ZIndex = 5,
+			Parent = Tab.UIElements.Main,
+			ThemeTag = {
+				BackgroundColor3 = "Text",
+			},
+		}, {
+			New("UICorner", {
+				CornerRadius = UDim.new(1, 0),
+			}),
+		})
+	end
+
 	local TextOffset = 0
 	local Icon
 	local Icon2
@@ -604,7 +625,14 @@ function TabModule:SelectTab(TabIndex)
 					}, 0.15)
 				end
 				TabObject.Selected = false
+
+				if TabObject.UIElements.Indicator then
+					Creator.Tween(TabObject.UIElements.Indicator, 0.15, { BackgroundTransparency = 1 }):Play()
+				end
 			end
+		end
+		if TabModule.Tabs[TabIndex].UIElements.Indicator then
+			Creator.Tween(TabModule.Tabs[TabIndex].UIElements.Indicator, 0.15, { BackgroundTransparency = 0 }):Play()
 		end
 		Creator.SetThemeTag(TabModule.Tabs[TabIndex].UIElements.Main, {
 			ImageColor3 = "TabBackgroundActive",

@@ -69,7 +69,10 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
         }, {
             IconFrame,
             New("TextLabel", {
-                Text = SectionModule.Title,
+                -- Vexari UI: Window Config Style = "Dashboard" / UppercaseSections = true -> "PLAYER"
+                Text = (Window.UppercaseSections and not SectionModule.Title:find("^loc:"))
+                    and SectionModule.Title:upper()
+                    or SectionModule.Title,
                 TextXAlignment = "Left",
                 Size = UDim2.new(
                     1, 
@@ -83,7 +86,7 @@ function Section.New(SectionConfig, Parent, Folder, UIScale, Window)
                     TextColor3 = "Text",
                 },
                 FontFace = Font.new(Creator.Font, Enum.FontWeight.SemiBold),
-                TextSize = 14,
+                TextSize = Window.UppercaseSections and 12 or 14,
                 BackgroundTransparency = 1,
                 TextTransparency = .7,
                 --TextTruncate = "AtEnd",

@@ -64,6 +64,29 @@ return function(WindUI, Creator)
 		},
 
 		-- Vexari UI themes (added in the Vexari UI fork)
+		Obsidian = {
+			Name = "Obsidian",
+
+			Accent = Color3.fromHex("#131316"),
+			Dialog = Color3.fromHex("#131316"),
+			Outline = Color3.fromHex("#ffffff"),
+			Text = Color3.fromHex("#f4f4f5"),
+			Placeholder = Color3.fromHex("#71717a"),
+			Background = Color3.fromHex("#0b0b0d"),
+			Button = Color3.fromHex("#2a2a30"),
+			Primary = Color3.fromHex("#fafafa"),
+			Icon = Color3.fromHex("#d4d4d8"),
+			Toggle = Color3.fromHex("#34d399"),
+			Slider = Color3.fromHex("#fafafa"),
+			Checkbox = Color3.fromHex("#fafafa"),
+
+			PanelBackground = Color3.fromHex("#ffffff"),
+			PanelBackgroundTransparency = 0.97,
+
+			ElementBackground = Color3.fromHex("#18181b"),
+			ElementBackgroundTransparency = 0,
+		},
+
 		Vexari = {
 			Name = "Vexari",
 

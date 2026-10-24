@@ -13,17 +13,46 @@ Vexari UI is a Roblox (Luau) UI library for script hubs. It is a **fork of [Wind
 ## What Vexari UI adds
 
 - **Settings tab** – `Window:CreateSettingsTab()` builds a ready-made tab with theme, font, window transparency and background image controls
-- **Background image** – change the window background at runtime from an asset id / URL, with Apply and Reset, without recreating the window
-- **Themes** – `Vexari` (dark) and `Vexari Light`
+- **Background image** – change the window background at runtime from a Roblox image ID **or** an image URL (separate boxes, Apply and Reset), without recreating the window
+- **Dashboard components** – live fps / ping line, profile card, stat cards, page header (see "Dashboard look")
+- **Themes** – `Vexari` (dark), `Vexari Light` and `Obsidian` (neutral near-black)
 - **Fonts** – a font list built from fonts that ship with Roblox (`WindUI:GetFonts()`, `WindUI:SetFont(name)`)
+
+## Dashboard look
+
+```luau
+local Window = WindUI:CreateWindow({
+    Title = "Star Hub",
+    Style = "Dashboard",                       -- indicator bar on the selected tab, CAPS group titles
+    Status = true,                             -- "● 60 fps  ● 78 ms" under the title and on the open button
+    OpenButton = { Style = "Minimal", OnlyMobile = false },
+})
+WindUI:SetTheme("Obsidian")
+
+local Home = Window:Tab({ Title = "Home", Icon = "home" })
+Home:Header({ Eyebrow = "Overview", Title = "Home", Icon = "home" })
+Home:Profile({                                  -- name / @username / avatar default to the local player
+    Button = { Title = "Lobby", Callback = function() end },
+    Status = { Text = "Waiting for a round", Icon = "hourglass" },
+})
+local Stats = Home:Stats({
+    Items = {
+        { Key = "coins", Title = "Coins", Value = 1540, Color = "Yellow" },  -- Color = label color
+        { Key = "farm", Title = "Auto farm", Value = "ON", ValueColor = "Green" },
+    },
+})
+Stats:SetValue("coins", 2500)                   -- numbers get thousands separators: "2,500"
+```
+
+Colors accept a `Color3`, `"#rrggbb"` or a name (`Yellow Blue Purple Green Orange Red Pink Cyan White Gray`).
+`Window:SetStatus(false)` removes the fps / ms line, `Window:SetStatus({ Ping = false })` shows fps only.
+The full page is in `main_dashboard.lua`.
 
 ## Installation
 
 ```luau
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/vbcghhi-cell/VexariUI/main/dist/main.lua"))()
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/vbcghhi-cell/WindUI/main/dist/main.lua"))()
 ```
-
-Everything lives in this one repository: the source in `src/`, the icon packs in `src/Icons/` and the ready-to-use bundle in `dist/main.lua`. Loading the library does not fetch anything from any other repository.
 
 (Change the URL if you host the repository under another name or branch.)
 
@@ -53,13 +82,18 @@ Window:CreateSettingsTab()
 -- source: asset id (number or string), "rbxassetid://id", a roblox.com asset link,
 --         or an http(s) image URL (executors with writefile + getcustomasset only)
 -- Yields until the image is loaded. Returns true, or false + an error message.
-local ok, err = Window:SetBackground("123456789", {
+-- A successful call may return a second value: a warning to show to the user.
+local ok, message = Window:SetBackground("123456789", {
     Transparency = 0.35,   -- 0 = fully visible image, 1 = invisible
     ScaleType = "Crop",    -- "Crop" (fill) | "Fit" | "Stretch"
+    Only = "id",           -- optional: "id" = Roblox asset ids only, "url" = links only
 })
 if not ok then
-    warn(err)
+    warn(message)
 end
+
+-- image from a link (PNG / JPEG, direct link)
+Window:SetBackground("https://i.imgur.com/xxxxxxx.png", { Only = "url" })
 
 Window:SetBackgroundImageTransparency(0.5) -- existing API, now also controls the custom image
 Window:SetBackgroundScaleType("Fit")
@@ -82,51 +116,47 @@ WindUI:SetTheme("Vexari")
 | Path | Purpose |
 | --- | --- |
 | `src/` | Library source (Luau). `src/Init.lua` is the entry point |
-| `src/Icons/` | Icon packs (lucide, solar, craft, geist, sfsymbols, gravity) and the icon registry, vendored from [Footagesus/Icons](https://github.com/Footagesus/Icons) (MIT) |
 | `src/components/window/Background.lua` | Background image manager (new) |
 | `src/components/window/Settings.lua` | Built-in Settings tab (new) |
 | `src/modules/Fonts.lua` | Font registry (new) |
-| `build/` | Build scripts and config (`npm run build`, uses darklua) |
-| `dist/main.lua` | Bundled library that `loadstring` loads (generated, committed by CI) |
+| `src/components/ui/` | `Status`, `Chip`, `StatCard`, `ProfileCard`, `PageHeader` (new, dashboard components) |
+| `src/elements/` | `Header`, `Profile`, `Stats` elements (new) |
+| `build/` | Build scripts and config (`npm run build`, uses darklua + Rojo) |
+| `dist/main.lua` | Bundled library that `loadstring` loads |
 | `main.client.lua` | Full example |
-| `tests/vexari/` | Logic tests for the Vexari additions (`npm test`, mocked Roblox API) |
+| `main_dashboard.lua` | Dashboard-style example (Home page with profile + stat cards) |
+| `tests/vexari/` | Logic tests for the Vexari additions (`python3 tests/vexari/run_tests.py`, mocked Roblox API) |
 
 ## Building
 
-Everything needed is in this repository, there are no submodules.
+`src/Icons` is a git submodule (`Footagesus/Icons`). Clone with `git clone --recursive`, or run `git submodule update --init`, then:
 
 ```sh
-git clone https://github.com/vbcghhi-cell/VexariUI
-cd VexariUI
 npm install
-aftman install   # installs rojo, lune and darklua (only darklua is needed for the build)
+aftman install   # installs rojo, lune and darklua
 npm run build    # production build  -> dist/main.lua
 npm run dev      # development build
-npm test         # logic tests (needs Python 3 and liblua5.4, e.g. `apt install liblua5.4-0`)
 ```
-
-Pushing to `main` rebuilds `dist/main.lua` through GitHub Actions. Pushing a tag creates a release.
-
-## Contributing
-
-Issues and pull requests are welcome. Every pull request is built automatically and the result is commented on the PR. Please run `npm test` and `npm run build` before opening one.
 
 ## Credits and license
 
 - Vexari UI is based on **WindUI** by Footagesus – https://github.com/Footagesus/WindUI
 - Licensed under the MIT License, see [LICENSE](LICENSE). The original copyright notice is kept.
-- The icon registry and packs in `src/Icons/` come from https://github.com/Footagesus/Icons (MIT, see [src/Icons/LICENSE](src/Icons/LICENSE)).
+- See [NOTICE.md](NOTICE.md) for the attribution and the list of changes.
 
-#### Icon sources
+#### Icons (https://github.com/Footagesus/Icons)
 
 - [Lucide-Icons](https://github.com/lucide-icons/lucide)
 - [Craft Icons](https://www.figma.com/community/file/1415718327120418204)
 - [Geist Icons](https://vercel.com/geist/icons)
 - [Solar Icons](https://icones.js.org/collection/solar)
 - [SF Symbols](https://sf-symbols-one.vercel.app/)
-- [Gravity UI Icons](https://gravity-ui.com/icons)
 
-The icon sets keep the licenses of their original authors. Check them before you redistribute the icons outside this project.
+## Contributing
+
+- Run the logic tests before opening a pull request: `python3 tests/vexari/run_tests.py` (Linux, needs `liblua5.4`)
+- Build with `npm run build` (see "Building"). Pull requests are built automatically by GitHub Actions
+- Keep `LICENSE` and `NOTICE.md` intact
 
 ### Upstream links (WindUI)
 

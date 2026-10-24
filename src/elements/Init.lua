@@ -18,6 +18,10 @@ return {
 		HStack = require("./HStack"),
 		VStack = require("./VStack"),
 		Viewport = require("./Viewport"),
+		-- Vexari UI dashboard elements
+		Header = require("./Header"),
+		Stats = require("./Stats"),
+		Profile = require("./Profile"),
 		--Video       = require("./Video"),
 	},
 	Load = function(tbl, Container, Elements, Window, WindUI, OnElementCreateFunction, ElementsModule, UIScale, Tab)

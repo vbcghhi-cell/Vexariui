@@ -1,19 +1,20 @@
-# 1.7.1
-
-## Changelog (Vexari UI)
-
-- merged the source repository and the `dist`-only repository into a single repository: sources, icon packs and the built `dist/main.lua` now live together
-- icon packs are vendored in `src/Icons/` (no more git submodule) and are always loaded from the bundle; the library no longer downloads icons from another repository when it starts
-- removed the unused Studio-only server scripts and the legacy `modules/Icons.lua`
-- CI no longer needs submodules or an extra clone step; the repository URL is now `vbcghhi-cell/VexariUI`
-- added `npm test`
-
 # 1.7.0
 
 ## Changelog (Vexari UI)
 
+- **dashboard look** (inspired by hub-style overview pages)
+  - new components in `src/components/ui/`: `Status` (live fps / ping), `Chip`, `StatCard`, `ProfileCard`, `PageHeader`
+  - new elements: `Tab:Header`, `Tab:Profile`, `Tab:Stats`
+  - window Config `Status = true`: "● 60 fps  ● 78 ms" under the title and on the open button (`Window:SetStatus`)
+  - window Config `Style = "Dashboard"`: left indicator bar on the selected tab and upper-case sidebar group titles (`TabIndicator`, `UppercaseSections` can be set one by one)
+  - `OpenButton = { Style = "Minimal" }`: near-black pill with a thin grey outline
+  - theme `Obsidian`
+  - example: `main_dashboard.lua`
+
 - renamed the project to **Vexari UI** (fork of [WindUI](https://github.com/Footagesus/WindUI) by Footagesus, MIT). Public Lua API names are unchanged, existing scripts keep working
 - added `Window:CreateSettingsTab(config)` – ready-made Settings tab (theme, font, window transparency, background image with Apply / Reset)
+- Settings background has two separate sources: a **Roblox image ID** box and an **Image URL** box (each with its own Apply button, one shared Reset). `Window:SetBackground(source, { Only = "id" | "url" })` restricts what is accepted
+- image links: downloaded files no longer go through `ContentProvider:PreloadAsync` / strict `IsLoaded` checks (unreliable for executor custom assets); both `game:HttpGet` and `request()` are tried; web-page links, GIF and oversized files give a clear message; `imgur.com/<id>`, `github.com/.../blob/...` and Discord WebP links are converted to direct image links; failures are also printed with `warn`
 - added background image API: `Window:SetBackground(source, { Transparency, ScaleType })`, `Window:ResetBackground()`, `Window:SetBackgroundScaleType(name)`, `Window:GetBackground()`
   - accepts asset id, `rbxassetid://id`, `roblox.com` asset links and (on executors with `writefile` + `getcustomasset`) image URLs
   - validates input, checks that the asset really loads, reports errors instead of silently showing nothing, never creates a second `ImageLabel`

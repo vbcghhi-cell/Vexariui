@@ -25,10 +25,15 @@ local Tag = require("../ui/Tag")
 local ConfigManager = require("../../config/Init")
 local BackgroundModule = require("./Background")
 local SettingsModule = require("./Settings")
+local StatusModule = require("../ui/Status")
 
 local Notified = false
 
 return function(Config)
+	-- Style = "Dashboard" turns on the tab indicator bar and upper-case sidebar group titles.
+	-- Each of them can still be forced on / off with Config.TabIndicator / Config.UppercaseSections.
+	local Dashboard = Config.Style == "Dashboard"
+
 	local Window = {
 		Title = Config.Title or "UI Library",
 		Author = Config.Author,
@@ -65,6 +70,10 @@ return function(Config)
 		HidePanelBackground = Config.HidePanelBackground or false,
 		AutoScale = Config.AutoScale ~= false,
 		OpenButton = Config.OpenButton,
+		Status = Config.Status, -- true | { FPS = true, Ping = true, Topbar = true, OpenButton = true }
+		Style = Config.Style,
+		TabIndicator = Config.TabIndicator == nil and Dashboard or Config.TabIndicator,
+		UppercaseSections = Config.UppercaseSections == nil and Dashboard or Config.UppercaseSections,
 		DragFrameSize = 160,
 
 		Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -1557,6 +1566,13 @@ return function(Config)
 
 				Window.Destroyed = true
 				Window.BackgroundManager:Destroy()
+				if Window.StatusRow then
+					Window.StatusRow:Destroy()
+					Window.StatusRow = nil
+				end
+				if Window.OpenButtonMain then
+					Window.OpenButtonMain:SetStatus(nil)
+				end
 
 				task.wait(0.4)
 
@@ -1713,8 +1729,43 @@ return function(Config)
 		return Window.OpenButtonMain:Edit(OpenButtonConfig)
 	end
 
+	-- Vexari UI: live "● 55 fps  ● 130 ms" line under the window title and on the open button.
+	--   Window:SetStatus(true)                          both places, fps + ping
+	--   Window:SetStatus({ Ping = false })              fps only
+	--   Window:SetStatus({ OpenButton = false })        topbar only
+	--   Window:SetStatus(false)                         remove
+	function Window:SetStatus(StatusConfig)
+		if Window.StatusRow then
+			Window.StatusRow:Destroy()
+			Window.StatusRow = nil
+		end
+
+		local Enabled = StatusConfig ~= nil and StatusConfig ~= false
+		local Options = typeof(StatusConfig) == "table" and StatusConfig or {}
+
+		if Enabled and Options.Topbar ~= false then
+			Window.StatusRow = StatusModule.NewRow({
+				Parent = Window.UIElements.Main.Main.Topbar.Left.Title,
+				LayoutOrder = 3,
+				TextSize = 13,
+				ShowFPS = Options.FPS ~= false,
+				ShowPing = Options.Ping ~= false,
+			})
+		end
+
+		if Window.OpenButtonMain then
+			Window.OpenButtonMain:SetStatus((Enabled and Options.OpenButton ~= false) and Options or nil)
+		end
+
+		Window.Status = Enabled and StatusConfig or nil
+	end
+
 	if Window.OpenButton and typeof(Window.OpenButton) == "table" then
 		Window:EditOpenButton(Window.OpenButton)
+	end
+
+	if Window.Status then
+		Window:SetStatus(Window.Status)
 	end
 
 	local TabModuleMain = require("./Tab")
